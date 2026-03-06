@@ -1,4 +1,4 @@
-import { ProbingHashtable, hash_id, ph_empty, ph_insert, ph_lookup } from '../../lib/hashtables';
+import { ProbingHashtable, hash_id, ph_empty, ph_insert, ph_lookup } from '../hashtables';
 
 export type ClientData = {
     id: number;

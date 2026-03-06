@@ -2,13 +2,13 @@ import { ECDH } from 'node:crypto';
 import {
     type Pair, pair, head, tail,
     type List, is_null, for_each, filter, enum_list
-} from '../../lib/list';
+} from './list';
 
 import {
     type Queue, empty, is_empty, enqueue, dequeue, head as qhead
 } from '../../lib/queue_array';
 
-import { Node } from "./network_listgraph";
+import { Node } from "../src/network_listgraph";
 //modified lib for listgraph
 
 export type EdgeType =
@@ -19,12 +19,42 @@ export type EdgeType =
   | "NETWORK_HOP";
 
 export type Node = {
-  type: EdgeType;
+    type: EdgeType;
+    to: Node;
+    from: Node;
 };
 
+const A: Node = {
+  id: 0,
+  label: "192.168.1.10",
+  type: "MACHINE"
+};
 
+const B: node = {
+  id: 1,
+  label: "ssh",
+  type: "SERVICE"
+};
 
-const nodes: Node = [A: Node, B: Node, C: Node, D: Node]
+const C: node = {
+  id: 2,
+  label: "OpenSSH",
+  type: "PRODUCT"
+};
+
+const D: node = {
+  id: 3,
+  label: "8.2",
+  type: "VERSION"
+};  
+
+const E: node = {
+  id: 4,
+  label: "Linux",
+  type: "OS"
+};
+
+const nodes: Array<Node> = [A, B, C, D];
 
 
 export type ListGraph = {
