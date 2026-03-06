@@ -35,9 +35,9 @@ function create_edgelist(machines) {
     return (0, list_1.reverse)(edges);
 }
 //check if EdgeList is created correctly
-print_edges(create_edgelist(parser_1.machines));
+print_edges(create_edgelist(parser_1.machines_for_lg));
 //create ListGraph from EdgeList
-var listgraph2 = (0, graphs_1.lg_from_edges)(parser_1.machines.length, create_edgelist(parser_1.machines));
+var listgraph2 = (0, graphs_1.lg_from_edges)(parser_1.machines_for_lg.length, create_edgelist(parser_1.machines_for_lg));
 //console.log(listgraph2);
 var listgraph = {
     adj: [

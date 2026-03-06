@@ -5,9 +5,10 @@ import {
 import {
      ListGraph, lg_bfs_visit_order, build_array, EdgeList, lg_from_edges
 } from "../lib/graphs";
+
 import { Machine } from './clientDataManager';
 
-import { machines } from '../parser/parser'
+import { machines_for_lg } from '../parser/parser'
 
 // Finds machines with the same subnet in /24 subnet
 function same_subnet(machine1: Machine, machine2: Machine): boolean {
@@ -48,12 +49,12 @@ for (let i = 0; i < machines.length; i++) {
 }
 
 //check if EdgeList is created correctly
-print_edges(create_edgelist(machines));
+print_edges(create_edgelist(machines_for_lg));
 
 //create ListGraph from EdgeList
 const listgraph2 = lg_from_edges(
-    machines.length,
-    create_edgelist(machines)
+    machines_for_lg.length,
+    create_edgelist(machines_for_lg)
   );
 //console.log(listgraph2);
 
