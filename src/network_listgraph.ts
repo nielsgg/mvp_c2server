@@ -8,8 +8,8 @@ import {
 } from '../../lib/queue_array';
 import {
     lg_from_edges,
-} from "../../lib/graphs";
-import {Edge, EdgeType, ListGraph, lg_bfs_visit_order, } from "../lib/hashtables_modified_lib"
+} from "../lib/graphs";
+import {Edge, EdgeType, ListGraph, lg_bfs_visit_order, } from "../lib/graphs_modified_lib"
 
 
 const listgraph: Node {
