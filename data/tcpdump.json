@@ -1,0 +1,92 @@
+{
+  "capture": {
+    "interface": "eth0",
+    "timestamp": "2026-03-07T12:45:02Z",
+    "packets": [
+      {
+        "timestamp": "2026-03-07T12:45:02.103Z",
+        "protocol": "TCP",
+        "src_ip": "192.168.1.23",
+        "src_port": 53422,
+        "dst_ip": "192.168.1.10",
+        "dst_port": 8080,
+        "flags": ["SYN"],
+        "seq": 12934821,
+        "ack": 0,
+        "length": 0
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.104Z",
+        "protocol": "TCP",
+        "src_ip": "192.168.1.10",
+        "src_port": 8080,
+        "dst_ip": "192.168.1.23",
+        "dst_port": 53422,
+        "flags": ["SYN", "ACK"],
+        "seq": 8723412,
+        "ack": 12934822,
+        "length": 0
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.106Z",
+        "protocol": "TCP",
+        "src_ip": "192.168.1.23",
+        "src_port": 53422,
+        "dst_ip": "192.168.1.10",
+        "dst_port": 8080,
+        "flags": ["ACK"],
+        "seq": 12934822,
+        "ack": 8723413,
+        "length": 0
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.150Z",
+        "protocol": "HTTP",
+        "src_ip": "192.168.1.23",
+        "src_port": 53422,
+        "dst_ip": "192.168.1.10",
+        "dst_port": 8080,
+        "method": "GET",
+        "path": "/api/machines",
+        "length": 312
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.170Z",
+        "protocol": "DNS",
+        "src_ip": "192.168.1.23",
+        "src_port": 49831,
+        "dst_ip": "8.8.8.8",
+        "dst_port": 53,
+        "query": "example.com",
+        "type": "A"
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.175Z",
+        "protocol": "DNS",
+        "src_ip": "8.8.8.8",
+        "src_port": 53,
+        "dst_ip": "192.168.1.23",
+        "dst_port": 49831,
+        "response": "93.184.216.34"
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.210Z",
+        "protocol": "ARP",
+        "src_ip": "192.168.1.23",
+        "src_mac": "b8:27:eb:1a:2b:3c",
+        "dst_ip": "192.168.1.1",
+        "operation": "request",
+        "info": "Who has 192.168.1.1? Tell 192.168.1.23"
+      },
+      {
+        "timestamp": "2026-03-07T12:45:02.212Z",
+        "protocol": "ARP",
+        "src_ip": "192.168.1.1",
+        "src_mac": "dc:a6:32:9f:22:11",
+        "dst_ip": "192.168.1.23",
+        "operation": "reply",
+        "info": "192.168.1.1 is at dc:a6:32:9f:22:11"
+      }
+    ]
+  }
+}
