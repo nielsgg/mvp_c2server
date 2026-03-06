@@ -2,10 +2,21 @@ import http from "http";
 import fs from "fs";
 import path from "path";
 // Import your new heap wrapper and the empty initializer
-import { heapInsert, heapExtractMax, resetHeap } from "../lib/heap"; 
+import { heapInsert, heapExtractMin, resetHeap, heap } from "../lib/heap"; 
 import { ClientData } from "./clientDataManager";
 
 const PORT = 3000;
+/*Helper function for heap visualisation tree, converts heap into JSON*/
+function serializeHeap(node: any): any {
+    if (!node) return null;
+
+    return {
+        key: node.key,
+        device: node.data,
+        left: serializeHeap(node.left_child),
+        right: serializeHeap(node.right_child)
+    };
+}
 
 /* ---------------- BACKEND HASHTABLE ---------------- */
 const clientTable = new Map<number, ClientData>();
@@ -36,8 +47,8 @@ setInterval(updateFakeVMs, 5000);
 const server = http.createServer((req, res) => {
 
     if(req.url === "/"){
-        // Using path.join prevents issues with where you run the command from
         const indexPath = path.join(__dirname, "index.html");
+
         if (fs.existsSync(indexPath)) {
             const html = fs.readFileSync(indexPath);
             res.writeHead(200, {"Content-Type": "text/html"});
@@ -50,21 +61,19 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.url === "/api/devices") {
-        // 1. Clear the persistent heap by resetting the variable
-        resetHeap(); 
 
-        // 2. Insert devices into heap
+        resetHeap();
+
         clientTable.forEach(device => {
             heapInsert(device);
         });
 
-        // 3. Extract in priority order (Min-heap gives oldest lastSeen first)
         const sortedDevices: ClientData[] = [];
-        let device = heapExtractMax();
+        let device = heapExtractMin();
 
         while (device !== null) {
             sortedDevices.push(device);
-            device = heapExtractMax();
+            device = heapExtractMin();
         }
 
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -72,8 +81,28 @@ const server = http.createServer((req, res) => {
         return;
     }
 
+    /* ---------------- HEAP VISUALIZATION ---------------- */
+
+    if (req.url === "/api/heap") {
+
+        resetHeap();
+
+        clientTable.forEach(device => {
+            heapInsert(device);
+        });
+
+        const tree = serializeHeap(heap);
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(tree));
+        return;
+    }
+
+    /* ---------------- 404 ---------------- */
+
     res.writeHead(404);
     res.end("Not found");
+
 });
 
 server.listen(PORT, () => {

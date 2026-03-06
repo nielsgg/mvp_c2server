@@ -94,6 +94,78 @@ animation:swapFlash 0.6s ease;
 100%{ background:white; }
 }
 
+/* Tree Visualisation */
+#heapContainer{
+display:flex;
+justify-content:center;
+margin-top:40px;
+}
+
+.tree{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+
+.node{
+padding:10px 14px;
+border-radius:8px;
+background:white;
+border:2px solid #3b82f6;
+font-size:12px;
+text-align:center;
+min-width:120px;
+}
+
+.node.online{
+border-color:green;
+}
+
+.node.offline{
+border-color:red;
+}
+
+.children{
+display:flex;
+gap:40px;
+margin-top:20px;
+position:relative;
+}
+
+.children::before{
+content:"";
+position:absolute;
+top:-10px;
+left:50%;
+width:2px;
+height:10px;
+background:#aaa;
+}
+.child{
+display:flex;
+flex-direction:column;
+align-items:center;
+}
+#heapTree {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    background: #fafafa;
+}
+
+svg text {
+    font-family: monospace;
+    pointer-events: none;
+}
+
+circle {
+    transition: transform 0.2s;
+}
+
+circle:hover {
+    transform: scale(1.15);
+    fill: #2196F3;
+}
 </style>
 </head>
 
@@ -124,13 +196,27 @@ animation:swapFlash 0.6s ease;
 
 <h2>Binary Heap Visualization</h2>
 
-<div>Heap visualisation appears here</div>
+<div id="heapContainer"></div>
 
 </section>
 
 </div>
 
 <script>
+/*Function loadHelp, helps add to heap visualisation*/
+async function loadHeap(){
+
+const res = await fetch("/api/heap");
+const tree = await res.json();
+
+const container = document.getElementById("heapContainer");
+
+container.innerHTML = "";
+
+if(tree){
+container.appendChild(renderHeapNode(tree));
+}
+}
 
 function showSection(id){
 
@@ -160,86 +246,45 @@ const container = document.getElementById("deviceList");
 
 /* Detect swaps */
 
-devices.forEach((device,index)=>{
-
-if(previousOrder[index] && previousOrder[index] !== device.id){
-
-const el = document.getElementById("device-"+device.id);
-
-if(el){
-el.classList.add("swap");
-
-setTimeout(()=>{
-el.classList.remove("swap");
-},600);
-
-}
-
-}
-
-});
-
 /* Render devices */
+devices.forEach(device => {
+    let div = document.getElementById("device-" + device.id);
 
-devices.forEach(device=>{
+    if (!div) {
+        div = document.createElement("div");
+        div.className = "device";
+        div.id = "device-" + device.id;
+        div.onclick = () => {
+            if (openDevices.has(device.id)) {
+                openDevices.delete(device.id);
+                div.classList.remove("active");
+            } else {
+                openDevices.add(device.id);
+                div.classList.add("active");
+            }
+        };
+    }
 
-let div = document.getElementById("device-"+device.id);
+    container.appendChild(div); 
 
-if(!div){
+    /* Update content */
+    div.innerHTML = `
+        <div class="device-header">
+            <strong>${device.ip}</strong>
+            <span class="status-${device.status}">${device.status}</span>
+        </div>
+        <div class="device-dashboard">
+            <p><b>User:</b> ${device.user}</p>
+            <p><b>OS:</b> ${device.os}</p>
+            <p><b>Gateway:</b> ${device.gateway}</p>
+            <p><b>Last Seen:</b> ${new Date(device.lastSeen).toLocaleTimeString()}</p>
+            <p><b>Status Priority:</b> ${device.status === 'online' ? 'High' : 'Low'}</p>
+        </div>
+    `;
 
-div = document.createElement("div");
-div.className="device";
-div.id="device-"+device.id;
-
-div.onclick=()=>{
-
-if(openDevices.has(device.id)){
-openDevices.delete(device.id);
-div.classList.remove("active");
-}
-else{
-openDevices.add(device.id);
-div.classList.add("active");
-}
-
-};
-
-container.appendChild(div);
-
-}
-
-/* Update content */
-
-div.innerHTML=`
-
-<div class="device-header">
-
-<strong>${device.ip}</strong>
-
-<span class="status-${device.status}">
-${device.status}
-</span>
-
-</div>
-
-<div class="device-dashboard">
-
-<p><b>User:</b> ${device.user}</p>
-<p><b>OS:</b> ${device.os}</p>
-<p><b>Gateway:</b> ${device.gateway}</p>
-<p><b>Last Seen:</b> ${device.lastSeen}</p>
-<p><b>Priority:</b> ${Date.now() - device.lastSeen}</p>
-
-</div>
-
-`;
-
-/* Keep dropdown open if it was open */
-
-if(openDevices.has(device.id)){
-div.classList.add("active");
-}
-
+    if (openDevices.has(device.id)) {
+        div.classList.add("active");
+    }
 });
 
 /* Save order for next update */
@@ -247,12 +292,93 @@ div.classList.add("active");
 previousOrder = devices.map(d=>d.id);
 
 }
+/*----------TREE HEAP VISUALISATION CODE-----------*/
+function renderHeap(nodes) {
 
-/* update every 3 seconds */
+    const container = document.getElementById("heapTree");
+    container.innerHTML = "";
 
+    const width = container.clientWidth;
+    const levelHeight = 100;
+    const nodeRadius = 22;
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("width", width);
+    svg.setAttribute("height", 600);
+
+    container.appendChild(svg);
+
+    nodes.forEach((node, index) => {
+
+        const level = Math.floor(Math.log2(index + 1));
+        const levelStart = Math.pow(2, level) - 1;
+        const posInLevel = index - levelStart;
+        const nodesInLevel = Math.pow(2, level);
+
+        const xSpacing = width / (nodesInLevel + 1);
+        const x = xSpacing * (posInLevel + 1);
+        const y = level * levelHeight + 50;
+
+        node._x = x;
+        node._y = y;
+
+    });
+
+    nodes.forEach((node, index) => {
+
+        const parentIndex = Math.floor((index - 1) / 2);
+
+        if (index > 0) {
+
+            const parent = nodes[parentIndex];
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+
+            line.setAttribute("x1", parent._x);
+            line.setAttribute("y1", parent._y);
+            line.setAttribute("x2", node._x);
+            line.setAttribute("y2", node._y);
+
+            line.setAttribute("stroke", "#666");
+            line.setAttribute("stroke-width", "2");
+
+            svg.appendChild(line);
+        }
+    });
+
+    nodes.forEach(node => {
+
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+        circle.setAttribute("cx", node._x);
+        circle.setAttribute("cy", node._y);
+        circle.setAttribute("r", nodeRadius);
+        circle.setAttribute("fill", "#4CAF50");
+
+        svg.appendChild(circle);
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+
+        text.setAttribute("x", node._x);
+        text.setAttribute("y", node._y + 5);
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "11");
+        text.setAttribute("fill", "white");
+
+        text.textContent = node.label;
+
+        svg.appendChild(text);
+
+    });
+}
+
+/* updates devices every 3 seconds */
 setInterval(loadDevices,3000);
+/*updates heap tree every 3 second*/
+setInterval(loadHeap,3000);
 
 loadDevices();
+loadHeap();
 
 </script>
 

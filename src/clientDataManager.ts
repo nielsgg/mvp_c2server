@@ -7,7 +7,7 @@ export type ClientData = {
     os: string;
     user: string;
     lastSeen: number; // Timestamp for last seen.
-    status: "online" | "offline" | undefined;
+    status: "online" | "offline";
 };
 
 type NmapService = {
