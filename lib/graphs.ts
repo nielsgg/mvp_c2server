@@ -1,11 +1,11 @@
 import {
     type Pair, pair, head, tail,
     type List, is_null, for_each, filter, enum_list
-} from './list';
+} from '../lib/list';
 
 import {
     type Queue, empty, is_empty, enqueue, dequeue, head as qhead
-} from './queue_array';
+} from '../lib/queue_array';
 
 // Data type definitions
 
@@ -67,7 +67,7 @@ export function undirected(el: EdgeList): EdgeList {
 }
 
 // Build an array based on a function computing the item at each index
-export function build_array<T>(size: number, content: (i: number) => T): Array<T> {
+function build_array<T>(size: number, content: (i: number) => T): Array<T> {
     const result = Array<T>(size);
     for (var i = 0; i < size; i = i + 1) {
         result[i] = content(i);
