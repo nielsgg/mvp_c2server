@@ -4,10 +4,62 @@ var list_1 = require("../lib/list");
 var queue_array_1 = require("../lib/queue_array");
 var graphs_1 = require("../lib/graphs");
 var machines = [
-    { ip: "192.168.1.10", subnet: { network: "192.168.1.0", mask: 24 } }, //0
-    { ip: "192.168.1.12", subnet: { network: "192.168.1.0", mask: 24 } }, //1
-    { ip: "192.168.2.5", subnet: { network: "192.168.1.0", mask: 24 } } //2
+    {
+        ip: "192.168.1.10",
+        subnet: { network: "192.168.1.0", mask: 24 }
+    },
+    {
+        ip: "192.168.1.22",
+        subnet: { network: "192.168.1.0", mask: 24 }
+    },
+    {
+        ip: "192.168.2.5",
+        subnet: { network: "192.168.2.0", mask: 24 }
+    },
+    {
+        ip: "10.0.0.3",
+        subnet: { network: "10.0.0.0", mask: 24 }
+    },
+    {
+        ip: "192.168.1.99",
+        subnet: { network: "192.168.1.0", mask: 24 }
+    }
 ];
+// Finds machines with the same subnet in /24 subnet
+function same_subnet(machine1, machine2) {
+    var a = machine1.ip.split(".");
+    var b = machine2.ip.split(".");
+    return a[0] === b[0] &&
+        a[1] === b[1] &&
+        a[2] === b[2];
+}
+//prints EdgeList correctly (for testing)
+function print_edges(edges) {
+    while (edges !== null) {
+        var edge = edges[0];
+        console.log(edge);
+        edges = edges[1];
+    }
+}
+// Create a edgelist
+function create_edgelist(machines) {
+    var edges = null;
+    for (var i = 0; i < machines.length; i++) {
+        for (var j = i + 1; j < machines.length; j++) {
+            if (same_subnet(machines[i], machines[j])) {
+                //creates the list edges backwards
+                edges = (0, list_1.pair)((0, list_1.pair)(i, j), edges);
+                edges = (0, list_1.pair)((0, list_1.pair)(j, i), edges);
+            }
+        }
+    }
+    return (0, list_1.reverse)(edges);
+}
+//check if EdgeList is created correctly
+print_edges(create_edgelist(machines));
+//create ListGraph from EdgeList
+var listgraph2 = (0, graphs_1.lg_from_edges)(machines.length, create_edgelist(machines));
+//console.log(listgraph2);
 var listgraph = {
     adj: [
         (0, list_1.list)(1), // node 0 shares subnet with 1
@@ -46,4 +98,4 @@ function traverse_subnets(graph) {
     }
     return clusters;
 }
-console.log(traverse_subnets(listgraph));
+console.log(traverse_subnets(listgraph2));
