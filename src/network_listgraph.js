@@ -3,28 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var list_1 = require("../lib/list");
 var queue_array_1 = require("../lib/queue_array");
 var graphs_1 = require("../lib/graphs");
-var machines = [
-    {
-        ip: "192.168.1.10",
-        subnet: { network: "192.168.1.0", mask: 24 }
-    },
-    {
-        ip: "192.168.1.22",
-        subnet: { network: "192.168.1.0", mask: 24 }
-    },
-    {
-        ip: "192.168.2.5",
-        subnet: { network: "192.168.2.0", mask: 24 }
-    },
-    {
-        ip: "10.0.0.3",
-        subnet: { network: "10.0.0.0", mask: 24 }
-    },
-    {
-        ip: "192.168.1.99",
-        subnet: { network: "192.168.1.0", mask: 24 }
-    }
-];
+var parser_1 = require("../parser/parser");
 // Finds machines with the same subnet in /24 subnet
 function same_subnet(machine1, machine2) {
     var a = machine1.ip.split(".");
@@ -56,9 +35,9 @@ function create_edgelist(machines) {
     return (0, list_1.reverse)(edges);
 }
 //check if EdgeList is created correctly
-print_edges(create_edgelist(machines));
+print_edges(create_edgelist(parser_1.machines));
 //create ListGraph from EdgeList
-var listgraph2 = (0, graphs_1.lg_from_edges)(machines.length, create_edgelist(machines));
+var listgraph2 = (0, graphs_1.lg_from_edges)(parser_1.machines.length, create_edgelist(parser_1.machines));
 //console.log(listgraph2);
 var listgraph = {
     adj: [

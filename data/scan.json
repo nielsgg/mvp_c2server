@@ -1,0 +1,137 @@
+[
+  {
+    "hostnames": [
+      {
+        "name": "router.local",
+        "type": "PTR"
+      }
+    ],
+    "addresses": {
+      "ipv4": "192.168.1.1",
+      "mac": "AA:BB:CC:DD:EE:01"
+    },
+    "status": {
+      "state": "up"
+    },
+    "ports": [
+      {
+        "portid": 80,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "http",
+          "product": "nginx",
+          "version": "1.22.1"
+        }
+      },
+      {
+        "portid": 22,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "ssh",
+          "product": "OpenSSH",
+          "version": "8.9"
+        }
+      }
+    ],
+    "os": {
+      "name": "Linux",
+      "accuracy": 95
+    }
+  },
+  {
+    "hostnames": [
+      {
+        "name": "workstation.local",
+        "type": "PTR"
+      }
+    ],
+    "addresses": {
+      "ipv4": "192.168.1.10",
+      "mac": "AA:BB:CC:DD:EE:02"
+    },
+    "status": {
+      "state": "up"
+    },
+    "ports": [
+      {
+        "portid": 445,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "microsoft-ds",
+          "product": "Samba",
+          "version": "4.17"
+        }
+      },
+      {
+        "portid": 139,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "netbios-ssn",
+          "product": "Samba",
+          "version": "4.17"
+        }
+      }
+    ],
+    "os": {
+      "name": "Linux",
+      "accuracy": 90
+    }
+  },
+  {
+    "hostnames": [
+      {
+        "name": "fileserver.local",
+        "type": "PTR"
+      }
+    ],
+    "addresses": {
+      "ipv4": "192.168.1.20",
+      "mac": "AA:BB:CC:DD:EE:03"
+    },
+    "status": {
+      "state": "up"
+    },
+    "ports": [
+      {
+        "portid": 21,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "ftp",
+          "product": "vsftpd",
+          "version": "3.0.3"
+        }
+      },
+      {
+        "portid": 22,
+        "protocol": "tcp",
+        "state": {
+          "state": "open"
+        },
+        "service": {
+          "name": "ssh",
+          "product": "OpenSSH",
+          "version": "8.4"
+        }
+      }
+    ],
+    "os": {
+      "name": "Linux",
+      "accuracy": 92
+    }
+  }
+]

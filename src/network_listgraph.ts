@@ -7,28 +7,7 @@ import {
 } from "../lib/graphs";
 import { Machine } from './clientDataManager';
 
-const machines: Machine[] = [
-  {
-    ip: "192.168.1.10",
-    subnet: { network: "192.168.1.0", mask: 24 }
-  },
-  {
-    ip: "192.168.1.22",
-    subnet: { network: "192.168.1.0", mask: 24 }
-  },
-  {
-    ip: "192.168.2.5",
-    subnet: { network: "192.168.2.0", mask: 24 }
-  },
-  {
-    ip: "10.0.0.3",
-    subnet: { network: "10.0.0.0", mask: 24 }
-  },
-  {
-    ip: "192.168.1.99",
-    subnet: { network: "192.168.1.0", mask: 24 }
-  }
-];
+import { machines } from '../parser/parser'
 
 // Finds machines with the same subnet in /24 subnet
 function same_subnet(machine1: Machine, machine2: Machine): boolean {
