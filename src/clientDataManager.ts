@@ -1,4 +1,5 @@
 import { ProbingHashtable, hash_id, ph_empty, ph_insert, ph_lookup } from '../lib/hashtables';
+import { List } from '../lib/list'
 
 export type ClientData = {
     id: number;
@@ -10,21 +11,31 @@ export type ClientData = {
     status: "online" | "offline";
 };
 
-type NmapService = {
+export type Machine = {
+  ip: string
+  subnet: Subnet
+}
+
+export type Subnet = {
+  network: string;
+  mask: number;
+};
+
+export type NmapService = {
   name?: string;
   product?: string;
   version?: string;
   extrainfo?: string;
 };
 
-type NmapPort = {
+export type NmapPort = {
   portid: number | string;
   protocol: string;
   state?: string | { state: string };
   service?: NmapService;
 };
 
-type NmapHost = {
+export type NmapHost = {
   addresses?: {
     ipv4?: string;
     ipv6?: string;
@@ -45,11 +56,11 @@ type NmapHost = {
   }[];
 };
 
-type NmapScanEntry = {
+export type NmapScanEntry = {
   host?: NmapHost;
 };
 
-type ParsedMachine = {
+export type ParsedMachine = {
   ip: string;
   hostname?: string;
   os?: string;
