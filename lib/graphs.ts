@@ -5,7 +5,7 @@ import {
 
 import {
     type Queue, empty, is_empty, enqueue, dequeue, head as qhead
-} from '../../lib/queue_array';
+} from './queue_array';
 
 // Data type definitions
 

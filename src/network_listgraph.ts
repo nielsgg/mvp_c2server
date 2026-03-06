@@ -5,7 +5,7 @@ import {
 
 import {
     type Queue, empty, is_empty, enqueue, dequeue, head as qhead
-} from '../../lib/queue_array';
+} from '../lib/queue_array';
 import {
     lg_from_edges,
 } from "../lib/graphs";
