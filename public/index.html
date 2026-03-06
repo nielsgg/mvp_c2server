@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Network Device Monitor</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:0;
+background:#f4f6f8;
+}
+
+header{
+background:#1f2937;
+color:white;
+padding:15px 30px;
+}
+
+nav{
+display:flex;
+gap:10px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+background:#3b82f6;
+color:white;
+border-radius:6px;
+cursor:pointer;
+}
+
+.container{
+padding:30px;
+}
+
+.section{
+display:none;
+}
+
+.section.active{
+display:block;
+}
+
+.device-list{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.device{
+background:white;
+padding:15px;
+border-radius:8px;
+cursor:pointer;
+transition:transform 0.3s ease;
+}
+
+.device-header{
+display:flex;
+justify-content:space-between;
+}
+
+.device-dashboard{
+margin-top:10px;
+padding:10px;
+background:#f9fafb;
+border-radius:6px;
+display:none;
+}
+
+.device.active .device-dashboard{
+display:block;
+}
+
+.status-online{
+color:green;
+}
+
+.status-offline{
+color:red;
+}
+
+/* Swap animation */
+
+.swap{
+animation:swapFlash 0.6s ease;
+}
+
+@keyframes swapFlash{
+0%{ background:#fde68a; }
+100%{ background:white; }
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>Network Device Monitor</h1>
+
+<nav>
+<button onclick="showSection('devices')">Devices</button>
+<button onclick="showSection('tree')">Heap Visualizer</button>
+</nav>
+
+</header>
+
+<div class="container">
+
+<section id="devices" class="section active">
+
+<h2>Connected Devices (Sorted by Heap Priority)</h2>
+
+<div class="device-list" id="deviceList"></div>
+
+</section>
+
+<section id="tree" class="section">
+
+<h2>Binary Heap Visualization</h2>
+
+<div>Heap visualisation appears here</div>
+
+</section>
+
+</div>
+
+<script>
+
+function showSection(id){
+
+document.querySelectorAll(".section")
+.forEach(sec=>sec.classList.remove("active"));
+
+document.getElementById(id).classList.add("active");
+
+}
+
+/* Track open dropdowns */
+
+const openDevices = new Set();
+
+/* Track previous heap order */
+
+let previousOrder = [];
+
+/* ---------------- FETCH DEVICES ---------------- */
+
+async function loadDevices(){
+
+const res = await fetch("/api/devices");
+const devices = await res.json();
+
+const container = document.getElementById("deviceList");
+
+/* Detect swaps */
+
+devices.forEach((device,index)=>{
+
+if(previousOrder[index] && previousOrder[index] !== device.id){
+
+const el = document.getElementById("device-"+device.id);
+
+if(el){
+el.classList.add("swap");
+
+setTimeout(()=>{
+el.classList.remove("swap");
+},600);
+
+}
+
+}
+
+});
+
+/* Render devices */
+
+devices.forEach(device=>{
+
+let div = document.getElementById("device-"+device.id);
+
+if(!div){
+
+div = document.createElement("div");
+div.className="device";
+div.id="device-"+device.id;
+
+div.onclick=()=>{
+
+if(openDevices.has(device.id)){
+openDevices.delete(device.id);
+div.classList.remove("active");
+}
+else{
+openDevices.add(device.id);
+div.classList.add("active");
+}
+
+};
+
+container.appendChild(div);
+
+}
+
+/* Update content */
+
+div.innerHTML=`
+
+<div class="device-header">
+
+<strong>${device.ip}</strong>
+
+<span class="status-${device.status}">
+${device.status}
+</span>
+
+</div>
+
+<div class="device-dashboard">
+
+<p><b>User:</b> ${device.user}</p>
+<p><b>OS:</b> ${device.os}</p>
+<p><b>Gateway:</b> ${device.gateway}</p>
+<p><b>Last Seen:</b> ${device.lastSeen}</p>
+<p><b>Priority:</b> ${Date.now() - device.lastSeen}</p>
+
+</div>
+
+`;
+
+/* Keep dropdown open if it was open */
+
+if(openDevices.has(device.id)){
+div.classList.add("active");
+}
+
+});
+
+/* Save order for next update */
+
+previousOrder = devices.map(d=>d.id);
+
+}
+
+/* update every 3 seconds */
+
+setInterval(loadDevices,3000);
+
+loadDevices();
+
+</script>
+
+</body>
+</html>

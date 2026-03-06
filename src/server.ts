@@ -1,75 +1,90 @@
 import http from "http";
-
+import fs from "fs";
+import { heapInsert, heapExtractMax, heap } from "../lib/heap";
+import { ClientData } from "./clientDataManager";
 const PORT = 3000;
 
-/**
- * Simple backend hashtable
- */
-const data = new Map<string, { name: string; age: number }>();
+/* ---------------- BACKEND HASHTABLE ---------------- */
 
-data.set("1", { name: "Alice", age: 25 });
-data.set("2", { name: "Bob", age: 30 });
-data.set("3", { name: "Charlie", age: 28 });
+const clientTable = new Map<number, ClientData>();
 
-function renderTable(): string {
-  let rows = "";
+/* ---------------- FAKE VMs ---------------- */
 
-  for (const [id, user] of data.entries()) {
-    rows += `
-      <tr>
-        <td>${id}</td>
-        <td>${user.name}</td>
-        <td>${user.age}</td>
-      </tr>
-    `;
-  }
+const fakeVMs: ClientData[] = [
+    { id:1, ip:"192.168.1.10", gateway:"192.168.1.1", os:"Linux", user:"admin", lastSeen:5000, status:"online" },
+    { id:2, ip:"192.168.1.11", gateway:"192.168.1.1", os:"Windows 10", user:"guest", lastSeen:12000, status:"offline" },
+    { id:3, ip:"192.168.1.12", gateway:"192.168.1.1", os:"Ubuntu", user:"developer", lastSeen:8000, status:"online" },
+    { id:4, ip:"192.168.1.13", gateway:"192.168.1.1", os:"macOS", user:"designer", lastSeen:15000, status:"offline" },
+    { id:5, ip:"192.168.1.14", gateway:"192.168.1.1", os:"Linux", user:"tester", lastSeen:3000, status:"online" }
+];
 
-  return `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <title>Hello Node</title>
-    <style>
-      body { font-family: Arial; padding: 40px; }
-      table { border-collapse: collapse; width: 400px; }
-      th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-      th { background: #eee; }
-    </style>
-  </head>
-  <body>
-    <h1>Hello World Node + TypeScript</h1>
+/* insert into hashtable */
 
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Age</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows}
-      </tbody>
-    </table>
+fakeVMs.forEach(vm => clientTable.set(vm.id, vm));
 
-  </body>
-  </html>
-  `;
+/* ---------------- SIMULATION ---------------- */
+
+function updateFakeVMs() {
+
+    clientTable.forEach(vm => {
+
+        vm.lastSeen += Math.floor(Math.random()*5000);
+
+        if(Math.random() < 0.2){
+            vm.status = vm.status === "online" ? "offline" : "online";
+        }
+
+    });
+
 }
 
-const server = http.createServer((req, res) => {
-  if (req.url === "/") {
-    const html = renderTable();
+/* update every 5 seconds */
 
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(html);
+setInterval(updateFakeVMs,5000);
+
+/* ---------------- SERVER ---------------- */
+
+const server = http.createServer((req,res)=>{
+
+    if(req.url === "/"){
+
+        const html = fs.readFileSync("./index.html");
+
+        res.writeHead(200,{"Content-Type":"text/html"});
+        res.end(html);
+        return;
+    }
+
+    if (req.url === "/api/devices") {
+
+    // clear heap before rebuilding
+    heap.length = 0;
+
+    // insert devices into heap
+    clientTable.forEach(device => {
+        heapInsert(device);
+    });
+
+    // extract in priority order
+    const sortedDevices: ClientData[] = [];
+
+    let device = heapExtractMax();
+
+    while (device !== null) {
+        sortedDevices.push(device);
+        device = heapExtractMax();
+    }
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(sortedDevices));
     return;
-  }
+    }
 
-  res.writeHead(404);
-  res.end("Not found");
+    res.writeHead(404);
+    res.end("Not found");
+
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+server.listen(PORT,()=>{
+    console.log(`Server running at http://localhost:${PORT}`);
 });
