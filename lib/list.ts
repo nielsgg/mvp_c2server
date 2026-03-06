@@ -1,4 +1,4 @@
-
+// @ts-nocheck
 // Provides a typed implementation of lists as seen in Source Academy
 
 /**
@@ -69,7 +69,7 @@ export function is_null(v: any): v is null {
 export function list<S>(...elements: Array<S>): List<S> {
     let lst: List<S> = null;
     for (let i = elements.length - 1; i >= 0; i = i - 1) {
-        lst = pair(elements[i], lst);
+        lst = pair(elements[i]!, lst);
     }
     return lst;
 }

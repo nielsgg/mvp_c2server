@@ -1,78 +1,46 @@
-import type {ClientData} from "../src/clientDataManager";
+import type { ClientData } from "../src/clientDataManager";
+import { 
+    type TreeHeap, 
+    th_empty, 
+    th_insert, 
+    th_top, 
+    th_remove, 
+    th_is_empty 
+} from "./heaps";
+import { tail } from "./list";
 
-export let heap: ClientData[] = [];
+export let heap: TreeHeap<number, ClientData> = th_empty();
 
-export function getPriority(device: ClientData): number {
-    const priority: number = Date.now() - device.lastSeen;
-    return priority;
+/**
+ * Creates a composite key for the Min-Heap.
+ * 1. Online devices get a base value of 0.
+ * 2. Offline devices get a massive penalty so they always rank lower.
+ * 3. Adding 'lastSeen' ensures that within each group, the oldest is on top.
+ */
+export function getPriorityKey(device: ClientData): number {
+    const STATUS_PENALTY = 1e15; // A number larger than any possible timestamp
+    const statusWeight = device.status === "online" ? 0 : STATUS_PENALTY;
+    
+    return statusWeight + device.lastSeen;
 }
 
-// Inserts device into heap
+export function resetHeap(): void {
+    heap = th_empty();
+}
+
 export function heapInsert(device: ClientData): void {
-    heap.push(device);
-
-    let i: number = heap.length - 1;
-
-    while (i > 0) {
-        let parentIndex: number = Math.floor((i - 1) / 2);
-
-        let child: ClientData = heap[i];
-        let parent: ClientData = heap[parentIndex];
-
-        if (getPriority(child) <= getPriority(parent)) break;
-
-        heap[i] = parent;
-        heap[parentIndex] = child;
-
-        i = parentIndex;
-    }   
+    const key = getPriorityKey(device);
+    heap = th_insert(heap, key, device);
 }
 
-// Removes the gighest priority device
 export function heapExtractMax(): ClientData | null {
-    if (heap.length === 0) {
+    if (th_is_empty(heap)) {
         return null;
     }
-    let max: ClientData = heap[0];
 
-    let last: ClientData | undefined = heap.pop();
+    const topPair = th_top(heap);
+    const device = tail(topPair);
 
-    if (heap.length === 0 || last === undefined) {
-        return max;
-    }
-
-    heap[0] = last;
-
-    let i: number = 0
-
-    while (true) {
-
-        let leftIndex: number = 2 * i + 1;
-        let rightIndex: number = 2 * i + 2;
-        let largestIndex: number = i;
-
-        if (leftIndex < heap.length &&
-            getPriority(heap[leftIndex]) > getPriority(heap[largestIndex])
-        ) {
-            largestIndex = leftIndex;
-        }
-
-        if ( rightIndex < heap.length &&
-            getPriority(heap[rightIndex]) > getPriority(heap[largestIndex])
-        ) { largestIndex = rightIndex;
-
-        }
-        
-        if (largestIndex === i){
-            break;
-        }
-
-        let temp: ClientData = heap[i];
-        heap[i] = heap[largestIndex];
-        heap[largestIndex] = temp;
-
-        i = largestIndex;
-   }
-
-   return max;
+    heap = th_remove(heap);
+    return device;
 }
