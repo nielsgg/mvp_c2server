@@ -1,10 +1,16 @@
 import { ProbingHashtable, hash_id, ph_empty, ph_insert, ph_lookup } from '../lib/hashtables';
 import { List } from '../lib/list'
 
+export type Subnet = {
+  network: string;
+  mask: number;
+}
+
 export type ClientData = {
     id: number;
     ip: string;
     gateway: string;
+    subnet: Subnet;
     os: string;
     user: string;
     lastSeen: number; // Timestamp for last seen.

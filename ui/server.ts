@@ -2,12 +2,10 @@ import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
 import { machines } from "../parser/parser";
-// import dayjs from "dayjs";
-// import relativeTime from "dayjs/plugin/relativeTime"
-
-// Import your new heap wrapper and the empty initializer
 import { heapInsert, heapExtractMin, resetHeap, heap } from "../lib/heap"; 
-import { ClientData } from "../src/clientDataManager";
+import { ClientData, initServerMemory, handleClientData } from "../src/clientDataManager";
+import { ph_keys, ph_lookup } from "../lib/hashtables";
+import { is_null, head, tail } from "../lib/list";
 
 const PORT = 3000;
 /*Helper function for heap visualisation tree, converts heap into JSON*/
@@ -22,27 +20,15 @@ function serializeHeap(node: any): any {
     };
 }
 
-/* ---------------- BACKEND HASHTABLE ---------------- */
-const clientTable = new Map<number, ClientData>();
+/* --- Init empty Probing Hashtable --- */
+const clientDataTable = initServerMemory(200);
 
-/* ---------------- FAKE VMs ---------------- */
-const fakeVMs: ClientData[] = [
-    { id:1, ip:"192.168.1.10", gateway:"192.168.1.1", os:"Linux", user:"admin", lastSeen:5000, status:"online" },
-    { id:2, ip:"192.168.1.11", gateway:"192.168.1.1", os:"Windows 10", user:"guest", lastSeen:12000, status:"offline" },
-    { id:3, ip:"192.168.1.12", gateway:"192.168.1.1", os:"Ubuntu", user:"developer", lastSeen:8000, status:"online" },
-    { id:4, ip:"192.168.1.13", gateway:"192.168.1.1", os:"macOS", user:"designer", lastSeen:15000, status:"offline" },
-    { id:5, ip:"192.168.1.14", gateway:"192.168.1.1", os:"Linux", user:"tester", lastSeen:3000, status:"online" }
-];
-//
+/* --- Import fake vm's from JSON --- */
+machines.forEach(vm => handleClientData(clientDataTable, vm));
 
-/* ---------------- FAKE VMs from JSON ---------------- */
-machines;
-
-fakeVMs.forEach(vm => clientTable.set(vm.id, vm));
-
-/* ---------------- SIMULATION ---------------- */
+/* --- Simulate vm behaviour --- */
 function updateFakeVMs() {
-    clientTable.forEach(vm => {
+    clientDataTable.forEach(vm => {
         vm.lastSeen += Math.floor(Math.random() * 5000);
         if(Math.random() < 0.2){
             vm.status = vm.status === "online" ? "offline" : "online";
@@ -72,7 +58,7 @@ const server = http.createServer((req, res) => {
 
         resetHeap();
 
-        clientTable.forEach(device => {
+        clientDataTable.forEach(device => {
             heapInsert(device);
         });
 
@@ -95,7 +81,7 @@ const server = http.createServer((req, res) => {
 
         resetHeap();
 
-        clientTable.forEach(device => {
+        clientDataTable.forEach(device => {
             heapInsert(device);
         });
 

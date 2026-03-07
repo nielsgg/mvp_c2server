@@ -9,17 +9,6 @@ const data = fs.readFileSync(
 );
 const scan = JSON.parse(data);
 
-// Create machine objects from scan.json
-export const machines_for_lg: Machine[] = scan.map((host: any) => ({
-  ip: host.addresses.ipv4,
-  subnet: {
-    network: host.addresses.ipv4.split(".").slice(0,3).join(".") + ".0",
-    mask: 24
-  }
-}));
-
-console.log(machines_for_lg);
-
 //create ClientData objects for dashboard
 export const machines: ClientData[] = scan.map((host: any, i: number) => {
 
@@ -34,10 +23,13 @@ export const machines: ClientData[] = scan.map((host: any, i: number) => {
   const status =
     host.status?.state === "up" ? "online" : "offline";
 
+  const subnetNetwork = ipv4 ? ipv4.split(".").slice(0,3).join(".") + ".0" : "0.0.0.0";
+
   return {
     id: i,
     ip: ipv4,
     gateway: ipv4?.split(".").slice(0,3).join(".") + ".1",
+    subnet: { network: subnetNetwork, mask: 24 },
     os,
     user: hostname,
     lastSeen: Date.now(),
