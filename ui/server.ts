@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 
 import { heapInsert, heapExtractMin, resetHeap, heap } from "../lib/heap";
-import { ClientData } from "./clientDataManager";
+import { ClientData } from "../src/clientDataManager";
 
 const PORT = 3000;
 

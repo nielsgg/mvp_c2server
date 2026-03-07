@@ -1,23 +1,62 @@
-import {
-    for_each, filter, list, head, tail, List, pair, Pair
-    , accumulate
-} from '../lib/list';
+import { list, map, pair, reverse, length } from '../lib/list';
 
 import {
-    type Queue, empty, is_empty, enqueue, dequeue, head as qhead
-} from '../lib/queue_array';
+    is_empty, dequeue, head as qhead } from '../lib/queue_array';
 import {
-     ListGraph, lg_bfs_visit_order, build_array
+     ListGraph, lg_bfs_visit_order, build_array, EdgeList, lg_from_edges
 } from "../lib/graphs";
 
-import { Machine, Subnet } from './clientDataManager'
+import { Machine } from './clientDataManager';
 
+import { machines_for_lg } from '../parser/parser'
 
-const machines: Machine[] = [
-  { ip: "192.168.1.10", subnet: {network: "192.168.1.0", mask: 24 } }, //0
-  { ip: "192.168.1.12", subnet: {network: "192.168.1.0",  mask: 24 } }, //1
-  { ip: "192.168.2.5", subnet: {network: "192.168.1.0",  mask: 24 } } //2
-];
+// Finds machines with the same subnet in /24 subnet
+function same_subnet(machine1: Machine, machine2: Machine): boolean {
+  const a = machine1.ip.split(".");
+  const b = machine2.ip.split(".");
+  return a[0] === b[0] &&
+         a[1] === b[1] &&
+         a[2] === b[2];
+}
+
+//prints EdgeList correctly (for testing)
+function print_edges(edges: EdgeList) {
+  while (edges !== null) {
+    const edge = edges[0];
+    console.log(edge);
+    edges = edges[1];
+  }
+}
+
+// Create a edgelist
+function create_edgelist(machines: Array<Machine>): EdgeList {
+
+    let edges: EdgeList = null;
+
+for (let i = 0; i < machines.length; i++) {
+  for (let j = i + 1; j < machines.length; j++) {
+
+    if (same_subnet(machines[i]!, machines[j]!)) {
+
+    //creates the list edges backwards
+      edges = pair(pair(i,j), edges);
+      edges = pair(pair(j,i), edges);
+
+    }
+  }
+}
+    return reverse(edges);
+}
+
+//check if EdgeList is created correctly
+print_edges(create_edgelist(machines_for_lg));
+
+//create ListGraph from EdgeList
+const listgraph2 = lg_from_edges(
+    machines_for_lg.length,
+    create_edgelist(machines_for_lg)
+  );
+//console.log(listgraph2);
 
 const listgraph: ListGraph = {
   adj: [
@@ -69,7 +108,7 @@ for (let i = 0; i < graph.size; i++) {
   return clusters;
 }
 
-console.log(traverse_subnets(listgraph));
+console.log(traverse_subnets(listgraph2));
 
 
 
