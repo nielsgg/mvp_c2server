@@ -6,31 +6,50 @@
 
 <style>
 
+/* ---------- GLOBAL ---------- */
+
 body{
-font-family:Arial;
+font-family:Segoe UI,Arial;
 margin:0;
-background:#f4f6f8;
+background:#0b0f19;
+color:#e6edf3;
 }
 
+/* ---------- HEADER ---------- */
+
 header{
-background:#1f2937;
-color:white;
-padding:15px 30px;
+background:#0f172a;
+padding:18px 30px;
+border-bottom:1px solid #1e293b;
+}
+
+header h1{
+margin:0;
+color:#38bdf8;
 }
 
 nav{
+margin-top:10px;
 display:flex;
 gap:10px;
 }
 
 button{
-padding:10px 15px;
+padding:10px 16px;
 border:none;
-background:#3b82f6;
+background:#2563eb;
 color:white;
 border-radius:6px;
 cursor:pointer;
+transition:0.2s;
 }
+
+button:hover{
+background:#3b82f6;
+transform:translateY(-1px);
+}
+
+/* ---------- LAYOUT ---------- */
 
 .container{
 padding:30px;
@@ -44,132 +63,159 @@ display:none;
 display:block;
 }
 
+/* ---------- DEVICE LIST ---------- */
+
 .device-list{
 display:flex;
 flex-direction:column;
-gap:10px;
+gap:12px;
 }
 
+/* card */
+
 .device{
-background:white;
-padding:15px;
-border-radius:8px;
+background:#111827;
+padding:16px;
+border-radius:10px;
+border:1px solid #1f2937;
 cursor:pointer;
-transition:transform 0.3s ease;
+transition:
+transform .35s ease,
+box-shadow .25s ease,
+border-color .25s ease;
+position:relative;
+overflow:hidden;
 }
+
+.device:hover{
+border-color:#38bdf8;
+box-shadow:0 0 12px rgba(56,189,248,0.25);
+transform:translateY(-2px);
+}
+
+/* header */
 
 .device-header{
 display:flex;
 justify-content:space-between;
+align-items:center;
+font-size:15px;
 }
 
+/* status */
+
+.status-online{
+color:#22c55e;
+font-weight:bold;
+}
+
+.status-offline{
+color:#ef4444;
+font-weight:bold;
+}
+
+/* activity pulse */
+
+.device.online::after{
+content:"";
+position:absolute;
+right:12px;
+top:12px;
+width:10px;
+height:10px;
+border-radius:50%;
+background:#22c55e;
+box-shadow:0 0 10px #22c55e;
+animation:pulse 1.6s infinite;
+}
+
+@keyframes pulse{
+0%{opacity:1}
+50%{opacity:.3}
+100%{opacity:1}
+}
+
+/* dropdown */
+
 .device-dashboard{
-margin-top:10px;
-padding:10px;
-background:#f9fafb;
-border-radius:6px;
+margin-top:12px;
+padding:12px;
+background:#020617;
+border-radius:8px;
+font-size:13px;
 display:none;
 }
 
 .device.active .device-dashboard{
 display:block;
+animation:fadeIn .3s ease;
 }
 
-.status-online{
-color:green;
+@keyframes fadeIn{
+from{opacity:0; transform:translateY(-4px)}
+to{opacity:1; transform:translateY(0)}
 }
 
-.status-offline{
-color:red;
-}
-
-/* Swap animation */
-
+/* swap highlight */
 .swap{
-animation:swapFlash 0.6s ease;
+  animation:swapFlash .7s ease;
 }
 
 @keyframes swapFlash{
-0%{ background:#fde68a; }
-100%{ background:white; }
+  0%{ background:#60a5fa } 
+  100%{ background:#111827 }
 }
 
-/* Tree Visualisation */
+/* ---------- HEAP TREE ---------- */
+
 #heapContainer{
-display:flex;
-justify-content:center;
-margin-top:40px;
-}
-
-.tree{
-display:flex;
-flex-direction:column;
-align-items:center;
-}
-
-.node{
-padding:10px 14px;
-border-radius:8px;
-background:white;
-border:2px solid #3b82f6;
-font-size:12px;
-text-align:center;
-min-width:120px;
-}
-
-.node.online{
-border-color:green;
-}
-
-.node.offline{
-border-color:red;
-}
-
-.children{
-display:flex;
-gap:40px;
+width:100%;
+height:620px;
+background:#020617;
+border:1px solid #1e293b;
+border-radius:10px;
 margin-top:20px;
 position:relative;
 }
 
-.children::before{
-content:"";
+/* nodes */
+
+circle{
+transition:
+cx .6s ease,
+cy .6s ease,
+fill .3s ease;
+cursor:pointer;
+filter: drop-shadow(0 0 6px rgba(56,189,248,.4));
+}
+
+svg text{
+font-family:monospace;
+pointer-events:none;
+}
+
+/* tooltip */
+
+.tooltip{
 position:absolute;
-top:-10px;
-left:50%;
-width:2px;
-height:10px;
-background:#aaa;
-}
-.child{
-display:flex;
-flex-direction:column;
-align-items:center;
-}
-#heapTree {
-    width: 100%;
-    height: 600px;
-    border: 1px solid #ddd;
-    background: #fafafa;
+background:#111827;
+color:white;
+padding:8px 10px;
+border-radius:6px;
+font-size:12px;
+pointer-events:none;
+border:1px solid #38bdf8;
+box-shadow:0 0 10px rgba(56,189,248,.3);
+display:none;
+z-index:10;
 }
 
-svg text {
-    font-family: monospace;
-    pointer-events: none;
-}
-
-circle {
-    transition: transform 0.2s;
-}
-
-circle:hover {
-    transform: scale(1.15);
-    fill: #2196F3;
-}
 </style>
 </head>
 
 <body>
+
+<div id="tooltip" class="tooltip"></div>
 
 <header>
 
@@ -186,7 +232,7 @@ circle:hover {
 
 <section id="devices" class="section active">
 
-<h2>Connected Devices (Sorted by Heap Priority)</h2>
+<h2>Connected Devices (Heap Priority)</h2>
 
 <div class="device-list" id="deviceList"></div>
 
@@ -203,20 +249,8 @@ circle:hover {
 </div>
 
 <script>
-/*Function loadHelp, helps add to heap visualisation*/
-async function loadHeap(){
 
-const res = await fetch("/api/heap");
-const tree = await res.json();
-
-const container = document.getElementById("heapContainer");
-
-container.innerHTML = "";
-
-if(tree){
-container.appendChild(renderHeapNode(tree));
-}
-}
+/* ---------- NAV ---------- */
 
 function showSection(id){
 
@@ -227,15 +261,12 @@ document.getElementById(id).classList.add("active");
 
 }
 
-/* Track open dropdowns */
+/* ---------- STATE ---------- */
 
 const openDevices = new Set();
-
-/* Track previous heap order */
-
 let previousOrder = [];
 
-/* ---------------- FETCH DEVICES ---------------- */
+/* ---------- DEVICE LIST ---------- */
 
 async function loadDevices(){
 
@@ -244,138 +275,198 @@ const devices = await res.json();
 
 const container = document.getElementById("deviceList");
 
-/* Detect swaps */
+const newOrder = devices.map(d=>d.id);
 
-/* Render devices */
-devices.forEach(device => {
-    let div = document.getElementById("device-" + device.id);
+devices.forEach((device,index)=>{
 
-    if (!div) {
-        div = document.createElement("div");
-        div.className = "device";
-        div.id = "device-" + device.id;
-        div.onclick = () => {
-            if (openDevices.has(device.id)) {
-                openDevices.delete(device.id);
-                div.classList.remove("active");
-            } else {
-                openDevices.add(device.id);
-                div.classList.add("active");
-            }
-        };
-    }
+let div=document.getElementById("device-"+device.id);
 
-    container.appendChild(div); 
+if(!div){
 
-    /* Update content */
-    div.innerHTML = `
-        <div class="device-header">
-            <strong>${device.ip}</strong>
-            <span class="status-${device.status}">${device.status}</span>
-        </div>
-        <div class="device-dashboard">
-            <p><b>User:</b> ${device.user}</p>
-            <p><b>OS:</b> ${device.os}</p>
-            <p><b>Gateway:</b> ${device.gateway}</p>
-            <p><b>Last Seen:</b> ${new Date(device.lastSeen).toLocaleTimeString()}</p>
-            <p><b>Status Priority:</b> ${device.status === 'online' ? 'High' : 'Low'}</p>
-        </div>
-    `;
+div=document.createElement("div");
+div.className="device";
+div.id="device-"+device.id;
 
-    if (openDevices.has(device.id)) {
-        div.classList.add("active");
-    }
-});
+div.onclick=()=>{
 
-/* Save order for next update */
+if(openDevices.has(device.id)){
+openDevices.delete(device.id);
+div.classList.remove("active");
+}else{
+openDevices.add(device.id);
+div.classList.add("active");
+}
 
-previousOrder = devices.map(d=>d.id);
+};
 
 }
-/*----------TREE HEAP VISUALISATION CODE-----------*/
-function renderHeap(nodes) {
 
-    const container = document.getElementById("heapTree");
+/* slide animation when order changes */
+
+if(previousOrder.indexOf(device.id)!==index){
+
+div.style.transform="translateX(15px)";
+setTimeout(()=>div.style.transform="translateX(0)",250);
+
+}
+
+/* swap flash */
+
+if(previousOrder[index] && previousOrder[index]!==device.id){
+
+div.classList.add("swap");
+setTimeout(()=>div.classList.remove("swap"),600);
+
+}
+
+/* update content */
+
+div.innerHTML=`
+<div class="device-header">
+<strong>${device.ip}</strong>
+<span class="status-${device.status}">
+${device.status}
+</span>
+</div>
+
+<div class="device-dashboard">
+
+<p><b>User:</b> ${device.user}</p>
+<p><b>OS:</b> ${device.os}</p>
+<p><b>Gateway:</b> ${device.gateway}</p>
+<p><b>Last Seen:</b> ${new Date(device.lastSeen).toLocaleTimeString()}</p>
+
+</div>
+`;
+
+if(device.status==="online")
+div.classList.add("online");
+else
+div.classList.remove("online");
+
+if(openDevices.has(device.id))
+div.classList.add("active");
+
+container.appendChild(div);
+
+});
+
+previousOrder=newOrder;
+
+}
+
+/* ---------- HEAP TREE ---------- */
+
+async function loadHeap(){
+
+const res=await fetch("/api/heap");
+const root=await res.json();
+
+renderHeap(root);
+
+}
+
+function flattenTree(node,arr=[]){
+if(!node) return arr;
+
+arr.push(node);
+flattenTree(node.left,arr);
+flattenTree(node.right,arr);
+
+return arr;
+}
+
+function renderHeap(root){
+    const container = document.getElementById("heapContainer");
     container.innerHTML = "";
+    if(!root) return;
+
+    // Flatten heap tree
+    let nodes = flattenTree(root);
+
+    // Sort by key so online devices appear first
+    nodes.sort((a,b) => a.key - b.key); // min key = online first
 
     const width = container.clientWidth;
-    const levelHeight = 100;
-    const nodeRadius = 22;
+    const levelHeight = 90;
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const svg = document.createElementNS("http://www.w3.org/2000/svg","svg");
     svg.setAttribute("width", width);
     svg.setAttribute("height", 600);
-
     container.appendChild(svg);
 
+    // Compute positions based on sorted order
+    const levels = {};
     nodes.forEach((node, index) => {
-
-        const level = Math.floor(Math.log2(index + 1));
-        const levelStart = Math.pow(2, level) - 1;
-        const posInLevel = index - levelStart;
+        // Calculate level based on number of nodes already in level
+        let level = Math.floor(Math.log2(index + 1));
+        if (!levels[level]) levels[level] = 0;
+        const pos = levels[level]++;
         const nodesInLevel = Math.pow(2, level);
-
         const xSpacing = width / (nodesInLevel + 1);
-        const x = xSpacing * (posInLevel + 1);
-        const y = level * levelHeight + 50;
-
-        node._x = x;
-        node._y = y;
-
+        node._x = xSpacing * (pos + 1);
+        node._y = level * levelHeight + 60;
     });
 
+    // Draw edges based on original tree structure
     nodes.forEach((node, index) => {
-
         const parentIndex = Math.floor((index - 1) / 2);
+        if(index > 0){
+            const parent = nodes.find(n => n.key === nodes[parentIndex].key);
+            if(!parent) return;
 
-        if (index > 0) {
-
-            const parent = nodes[parentIndex];
-
-            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-
+            const line = document.createElementNS("http://www.w3.org/2000/svg","line");
             line.setAttribute("x1", parent._x);
             line.setAttribute("y1", parent._y);
             line.setAttribute("x2", node._x);
             line.setAttribute("y2", node._y);
-
-            line.setAttribute("stroke", "#666");
+            line.setAttribute("stroke", "#475569");
             line.setAttribute("stroke-width", "2");
-
             svg.appendChild(line);
         }
     });
 
+    // Draw nodes
     nodes.forEach(node => {
-
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-
+        const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
         circle.setAttribute("cx", node._x);
         circle.setAttribute("cy", node._y);
-        circle.setAttribute("r", nodeRadius);
-        circle.setAttribute("fill", "#4CAF50");
-
+        circle.setAttribute("r", "22");
+        circle.setAttribute("fill", node.device.status === "online" ? "#22c55e" : "#ef4444");
         svg.appendChild(circle);
 
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-
+        const text = document.createElementNS("http://www.w3.org/2000/svg","text");
         text.setAttribute("x", node._x);
-        text.setAttribute("y", node._y + 5);
+        text.setAttribute("y", node._y + 4);
         text.setAttribute("text-anchor", "middle");
         text.setAttribute("font-size", "11");
         text.setAttribute("fill", "white");
-
-        text.textContent = node.label;
-
+        text.textContent = node.device.user;
         svg.appendChild(text);
 
+        // Tooltip
+        circle.addEventListener("mouseenter", e => {
+            const tip = document.getElementById("tooltip");
+            tip.style.display = "block";
+            tip.style.left = e.pageX + 10 + "px";
+            tip.style.top = e.pageY + 10 + "px";
+            tip.innerHTML = `
+                IP: ${node.device.ip}<br>
+                User: ${node.device.user}<br>
+                OS: ${node.device.os}<br>
+                Status: ${node.device.status}
+            `;
+        });
+
+        circle.addEventListener("mouseleave", () => {
+            document.getElementById("tooltip").style.display = "none";
+        });
     });
 }
+/* ---------- REFRESH ---------- */
 
-/* updates devices every 3 seconds */
-setInterval(loadDevices,3000);
-/*updates heap tree every 3 second*/
-setInterval(loadHeap,3000);
+setInterval(loadDevices,2000);
+setInterval(loadHeap,2000);
 
 loadDevices();
 loadHeap();

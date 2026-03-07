@@ -1,12 +1,14 @@
 import http from "http";
 import fs from "fs";
 import path from "path";
-// Import your new heap wrapper and the empty initializer
-import { heapInsert, heapExtractMin, resetHeap, heap } from "../lib/heap"; 
+
+import { heapInsert, heapExtractMin, resetHeap, heap } from "../lib/heap";
 import { ClientData } from "./clientDataManager";
 
 const PORT = 3000;
-/*Helper function for heap visualisation tree, converts heap into JSON*/
+
+/* ---------- SERIALIZE HEAP FOR VISUALIZER ---------- */
+
 function serializeHeap(node: any): any {
     if (!node) return null;
 
@@ -18,70 +20,120 @@ function serializeHeap(node: any): any {
     };
 }
 
-/* ---------------- BACKEND HASHTABLE ---------------- */
+/* ---------- DEVICE TABLE ---------- */
+
 const clientTable = new Map<number, ClientData>();
 
-/* ---------------- FAKE VMs ---------------- */
-const fakeVMs: ClientData[] = [
-    { id:1, ip:"192.168.1.10", gateway:"192.168.1.1", os:"Linux", user:"admin", lastSeen:5000, status:"online" },
-    { id:2, ip:"192.168.1.11", gateway:"192.168.1.1", os:"Windows 10", user:"guest", lastSeen:12000, status:"offline" },
-    { id:3, ip:"192.168.1.12", gateway:"192.168.1.1", os:"Ubuntu", user:"developer", lastSeen:8000, status:"online" },
-    { id:4, ip:"192.168.1.13", gateway:"192.168.1.1", os:"macOS", user:"designer", lastSeen:15000, status:"offline" },
-    { id:5, ip:"192.168.1.14", gateway:"192.168.1.1", os:"Linux", user:"tester", lastSeen:3000, status:"online" }
-];
+/* ---------- CREATE 15 FAKE VMs ---------- */
+
+function randomIP(i: number) {
+    return `192.168.1.${100 + i}`;
+}
+
+const fakeVMs: ClientData[] = [];
+
+for (let i = 1; i <= 15; i++) {
+
+    const vm: ClientData = {
+        id: i,
+        ip: randomIP(i),
+        gateway: "192.168.1.1",
+        os: ["Linux", "Windows 10", "Ubuntu", "macOS", "Debian"][i % 5]!,
+        user: ["admin", "guest", "dev", "tester", "ops"][i % 5]!,
+
+        lastSeen: Date.now() - Math.floor(Math.random() * 5000),
+
+        status: Math.random() > 0.3 ? "online" : "offline"
+    };
+
+    fakeVMs.push(vm);
+}
+
+/* insert into hashtable */
 
 fakeVMs.forEach(vm => clientTable.set(vm.id, vm));
 
-/* ---------------- SIMULATION ---------------- */
-function updateFakeVMs() {
-    clientTable.forEach(vm => {
-        vm.lastSeen += Math.floor(Math.random() * 5000);
-        if(Math.random() < 0.2){
-            vm.status = vm.status === "online" ? "offline" : "online";
-        }
-    });
-}
-setInterval(updateFakeVMs, 5000);
+/* ---------- SIMULATION LOOP ---------- */
 
-/* ---------------- SERVER ---------------- */
+function updateFakeVMs() {
+
+    clientTable.forEach(vm => {
+
+        vm.lastSeen = Date.now() - Math.floor(Math.random() * 3000);
+
+        if (Math.random() < 0.08) {
+            vm.status = vm.status === "online"
+                ? "offline"
+                : "online";
+        }
+
+    });
+
+}
+
+setInterval(updateFakeVMs, 2500);
+
+/* ---------- SERVER ---------- */
+
 const server = http.createServer((req, res) => {
 
-    if(req.url === "/"){
+    if (!req.url) return;
+
+    /* ---------- ROOT PAGE ---------- */
+
+    if (req.url === "/") {
+
         const indexPath = path.join(__dirname, "index.html");
 
-        if (fs.existsSync(indexPath)) {
-            const html = fs.readFileSync(indexPath);
-            res.writeHead(200, {"Content-Type": "text/html"});
-            res.end(html);
-        } else {
+        if (!fs.existsSync(indexPath)) {
             res.writeHead(404);
             res.end("index.html not found");
+            return;
         }
+
+        const html = fs.readFileSync(indexPath);
+
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(html);
+
         return;
     }
+
+    /* ---------- DEVICE LIST ---------- */
 
     if (req.url === "/api/devices") {
 
         resetHeap();
 
+        /* insert devices into heap */
+
         clientTable.forEach(device => {
+
+            /* priority rule:
+               online devices first
+               then by lastSeen
+            */
+
             heapInsert(device);
+
         });
 
         const sortedDevices: ClientData[] = [];
-        let device = heapExtractMin();
 
-        while (device !== null) {
-            sortedDevices.push(device);
-            device = heapExtractMin();
+        let d = heapExtractMin();
+
+        while (d !== null) {
+            sortedDevices.push(d);
+            d = heapExtractMin();
         }
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(sortedDevices));
+
         return;
     }
 
-    /* ---------------- HEAP VISUALIZATION ---------------- */
+    /* ---------- HEAP TREE ---------- */
 
     if (req.url === "/api/heap") {
 
@@ -95,15 +147,18 @@ const server = http.createServer((req, res) => {
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(tree));
+
         return;
     }
 
-    /* ---------------- 404 ---------------- */
+    /* ---------- 404 ---------- */
 
     res.writeHead(404);
     res.end("Not found");
 
 });
+
+/* ---------- START SERVER ---------- */
 
 server.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
